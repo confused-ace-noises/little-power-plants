@@ -8,19 +8,10 @@ public class AtlasProvider : MonoBehaviour
 {
     public SpriteAtlas[] atlases;
 
-
     private readonly Dictionary<string, Sprite> cache = new();
 
-    // trova uno sprite
-    public Sprite this[string name]
-    {
-        get => this[name, true];
-
-        private set => throw new System.Exception("Non settare valori qui, settali nell'editor");
-    }
-
-    // trova uno sprite, ma fa scegliere se interagire o meno con la cache.
-    public Sprite this[string name, bool cacheInteract]
+    // trova uno sprite.
+    public Sprite this[string name, bool cacheInteract = true]
     {
         get{
             if (cacheInteract)
@@ -46,7 +37,7 @@ public class AtlasProvider : MonoBehaviour
     }
 
     // prende un suggerimento sul nome dell'atlas; se non lo trova, usa un get normale come fallback.
-    public Sprite this[string hint, string name, bool cacheInteract]
+    public Sprite this[string hint, string name, bool cacheInteract = true]
     {
         get{
             if (cacheInteract)

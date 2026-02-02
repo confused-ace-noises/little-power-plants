@@ -37,4 +37,19 @@ public struct Tile
                 throw new Exception("Questo punto non deve essere raggiungibile.");
         }
     }
+
+    public static Tile DecideFromHeight(float height, AtlasProvider atlasProvider)
+    {
+        // polished algorithm goes here
+        if (height >= 0.7)
+        {
+            return new Tile(TileType.Mountain, atlasProvider);
+        } else if (height < 0.7)
+        {
+            return new Tile(TileType.Grass, atlasProvider);
+        } else
+        {
+            throw new Exception("If you get this message, the worldGen algorithm is broken, please go fix it.");
+        }
+    }
 }
