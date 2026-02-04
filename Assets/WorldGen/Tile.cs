@@ -1,43 +1,45 @@
 using System;
-using UnityEngine;
+using UnityEngine.Tilemaps;
 
-public struct Tile
+public class Tile
 {
-    public const string TILE_ATLAS_NAME = "blocks";
+    public const string TILE_ATLAS_NAME = "TileAtlas";
 
     public enum TileType
     {
         Grass,
-        Stone, 
+        Sand, 
         Water, 
         Mountain,
     }
 
-    Sprite sprite;
-
+    public TileBase TileBase { get; private set; }
     public TileType type;
 
-    public Tile(TileType type, AtlasProvider atlasProvider)
+    public Tile(TileType type, TileProvider tileProvider)
     {
         this.type = type;
-        this.sprite = atlasProvider[Tile.TILE_ATLAS_NAME, Tile.GetNameOfType(type), true];
+        this.TileBase = tileProvider.GetTile(GetNameOfType(type)) ?? throw new Exception($"bad name of tile: {GetNameOfType(type)}");
     }
 
     public static string GetNameOfType(TileType type)
     {
         switch (type)
         {
+            case TileType.Water: return "WaterTile";
+            
+            case TileType.Sand: return "SandTile";
+            
             case TileType.Mountain:
-            case TileType.Water:
-            case TileType.Stone:
             case TileType.Grass:
-                return "grass";
+                return "GrassTile";
 
             default:
                 throw new Exception("Questo punto non deve essere raggiungibile.");
         }
     }
 
+    /*
     public static Tile DecideFromHeight(float height, AtlasProvider atlasProvider)
     {
         // polished algorithm goes here
@@ -52,4 +54,5 @@ public struct Tile
             throw new Exception("If you get this message, the worldGen algorithm is broken, please go fix it.");
         }
     }
+    */
 }

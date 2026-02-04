@@ -1,3 +1,4 @@
+/*
 using UnityEngine;
 
 public class ChunkData
@@ -47,3 +48,4 @@ public class Chunk
     GameObject gameObject;
     MeshFilter meshFilter;
 }
+*/

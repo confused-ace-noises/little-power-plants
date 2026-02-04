@@ -18,7 +18,7 @@ public class PerlinNoise
         offsetY = random.Next(-100_000, 100_000);
     }
 
-    public float GetHeight(int x, int y)
+    public float GetValue(int x, int y)
     {
         float sampleX = (x + offsetX) * scale;
         float sampleY = (y + offsetY) * scale;
