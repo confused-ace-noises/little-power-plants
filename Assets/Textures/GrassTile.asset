@@ -21,7 +21,5 @@ MonoBehaviour:
   m_AutoTileDictionary:
     keyData: 
     valueData: []
-  m_TextureList:
-  - {fileID: 0}
-  m_TextureScaleList:
-  - 1
+  m_TextureList: []
+  m_TextureScaleList: []
