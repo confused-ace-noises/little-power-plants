@@ -1,70 +1,101 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.UI;
+using UnityEditor.PackageManager;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Tilemaps;
 
 public class World : MonoBehaviour
 {
-    [Header("Tilemap")]
+    [Header("TerrainTilemap")]
     public Tilemap terrainTilemap;
-    public TileProvider tileProvider;
+    public TileProvider terrainTileProvider;
 
-    [Header("Size rendered")]
-    public int halfLoadedWidth = 25;
-    public int halfLoadedHeight = 25;
+    [Header("OveralyTilemap")]
+    public Tilemap overlayTilemap;
+    public TileProvider overlayTileProvider;
 
-    [Header("Thresholds")]
-    public float mountain = 0.8f;
-    public float grass = 0.5f;
-    public float sand = 0.35f;
+    [Header("Data")]
+    public WorldData data;
 
     [Header("Player")]
     public Transform playerPos;
 
+    [Header("Buildings")]
+    public Building[] buildings;
+
     [Header("Miscellaneous")]
     public int seed = 1234567;
+    public MouseTrackSystem mouseTrackSystem;
 
-    PerlinNoise perlinNoise;
-    Thresholds thresholds;
+    public WorldNoise perlinNoise;
+    public Thresholds thresholds;
     
-    Vector2Int playerTile;
-    Vector2Int lastPlayerTile;
+    [NonSerialized] public Vector2Int playerTile;
+    [NonSerialized] public Vector2Int lastPlayerTile;
     
-    Tiles tiles;
-    HashSet<Vector3Int> previousRender;
+    
+    [NonSerialized] public Overlay overlayTiles;
+    [NonSerialized] public HashSet<Vector3Int> previousRenderOverlay;
+    
+    [NonSerialized] public WorldTiling worldTiles;
+    [NonSerialized] public HashSet<Vector3Int> previousRenderWorld;
+
+    [NonSerialized] bool worldIsDirty;
+
+    UnityEvent<Vector2Int[]> buildingIsPlaced;
 
     void Awake()
     {
-        perlinNoise = new PerlinNoise(seed, 0.1f);
-        thresholds = new Thresholds { tileProvider = tileProvider, grass = grass, mountain = mountain, sand = sand};
-        tiles = new Tiles(halfLoadedWidth, halfLoadedWidth, perlinNoise, thresholds);
+        perlinNoise = new WorldNoise(seed, 0.07f);
+        thresholds = new Thresholds(data.sand, data.grass, data.mountain, terrainTileProvider);
         playerPos.position = Vector3.zero;
+        overlayTiles = new Overlay(data.halfLoadedWidth, data.halfLoadedWidth, overlayTileProvider);
+        worldTiles = new WorldTiling(data.halfLoadedWidth, data.halfLoadedWidth, data.halfLogicChunkWidth, data.halfLogicChunkWidth, perlinNoise, thresholds, terrainTileProvider, overlayTiles);
     }
 
     void Start()
     {
-        previousRender = tiles.IntoTilemapDict().Keys.ToHashSet();
-        UpdatePlayerTile();
+        lastPlayerTile = new (0, 0);
+        playerTile = new (0, 0);
+        
+        worldIsDirty = true;
+        overlayTiles.isDirty = true;
+
+        previousRenderWorld = worldTiles.IntoTilemapDict().Keys.ToHashSet();
+        UpdateTiles(worldTiles, terrainTilemap, ref previousRenderWorld);
+
+        previousRenderOverlay = overlayTiles.IntoTilemapDict().Keys.ToHashSet();
+        UpdateTiles(overlayTiles, overlayTilemap, ref previousRenderOverlay);
+        
+        overlayTiles.isDirty = false;
+        worldIsDirty = false;
     }
 
     void Update()
     {
-        UpdatePlayerTile();
+        playerTile = (Vector2Int) terrainTilemap.WorldToCell(playerPos.position);
+        worldIsDirty = playerTile != lastPlayerTile;
+        
+        if (worldIsDirty)
+            UpdateTiles(worldTiles, terrainTilemap, ref previousRenderWorld);
+        
+        if (overlayTiles.isDirty || worldIsDirty)
+            UpdateTiles(overlayTiles, overlayTilemap, ref previousRenderOverlay);
+        
+        lastPlayerTile = playerTile;
     }
 
-    void UpdatePlayerTile()
+    void UpdateTiles<T>(Tiles<T> tiles, Tilemap tilemap, ref HashSet<Vector3Int> oldRender)
     {
-        Vector3Int cell = terrainTilemap.WorldToCell(playerPos.position);
-        playerTile = new Vector2Int(cell.x, cell.y);
-
         tiles.MoveCenter(playerTile);
         var dict = tiles.IntoTilemapDict();
 
-        foreach (var old in previousRender)
+        foreach (var old in oldRender)
         {
             if (!dict.ContainsKey(old))
-                terrainTilemap.SetTile(old, null);
+                tilemap.SetTile(old, null);
         }
 
         var positions = new Vector3Int[dict.Count];
@@ -78,8 +109,8 @@ public class World : MonoBehaviour
             i++;
         }
 
-        terrainTilemap.SetTiles(positions, tilesArr);
-        previousRender = positions.ToHashSet();
+        tilemap.SetTiles(positions, tilesArr);
+        oldRender = positions.ToHashSet();
     }
 
     void UpdatePlayerTileForce()
@@ -88,8 +119,8 @@ public class World : MonoBehaviour
         Vector3Int cell = terrainTilemap.WorldToCell(playerPos.position);
         playerTile = new Vector2Int(cell.x, cell.y);
 
-        tiles.MoveCenter(playerTile);
-        var dict = tiles.IntoTilemapDict();
+        worldTiles.MoveCenter(playerTile);
+        var dict = worldTiles.IntoTilemapDict();
 
         var positions = new Vector3Int[dict.Count];
         var tilesArr  = new TileBase[dict.Count];
@@ -104,28 +135,31 @@ public class World : MonoBehaviour
 
         terrainTilemap.SetTiles(positions, null);
         terrainTilemap.SetTiles(positions, tilesArr);
-        previousRender = positions.ToHashSet();
+        previousRenderWorld = positions.ToHashSet();
     }
     
     public void ChangeRenderedArea(int newHalfRenderedWidth, int newHalfRenderedHeight)
     {
-        this.halfLoadedWidth = newHalfRenderedWidth;
-        this.halfLoadedHeight = newHalfRenderedHeight;
+        data.halfLoadedWidth = newHalfRenderedWidth;
+        data.halfLoadedHeight = newHalfRenderedHeight;
 
-        tiles.ChangeLoadedArea(halfLoadedWidth, halfLoadedHeight);
+        worldTiles.ChangeLoadedArea(data.halfLoadedWidth, data.halfLoadedHeight);
     }
 
     [ContextMenu("DebugChangeRenderArea")]
     private void DebugChangeRenderArea()
     {
-        tiles.ChangeLoadedArea(halfLoadedWidth, halfLoadedHeight);
+        worldTiles.ChangeLoadedArea(data.halfLoadedWidth, data.halfLoadedHeight);
     }
 
     [ContextMenu("ChangeSeed")]
     private void ChangeSeed()
     {
-        perlinNoise = new PerlinNoise(seed, 0.1f);
-        tiles.ForceTotalReRenderAndClearCacheForTheLoveOfGodDoNotCallMeNormallyImGoingToBreakSomethingIfYouDo();
+        // perlinNoise = new WorldNoise(seed, 0.1f);
+        perlinNoise = new WorldNoise(seed, 0.07f);
+        thresholds = new Thresholds(data.sand, data.grass, data.mountain, terrainTileProvider);
+        worldTiles = new WorldTiling(data.halfLoadedWidth, data.halfLoadedWidth, data.halfLogicChunkWidth, data.halfLogicChunkWidth, perlinNoise, thresholds, terrainTileProvider, overlayTiles);
+        worldTiles.ForceTotalReRenderAndClearCacheForTheLoveOfGodDoNotCallMeNormallyImGoingToBreakSomethingIfYouDo();
         UpdatePlayerTileForce();
     }
 }

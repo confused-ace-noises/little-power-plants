@@ -1,43 +1,64 @@
 using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
+using Unity.VisualScripting.InputSystem;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class Tiles
+public abstract class Tiles<T>
 {
-    public Vector2Int CurrentCenter { get; private set; }
-    public Dictionary<Vector2Int, Tile> LoadedTileDict {get; private set;}
-    public Dictionary<Vector2Int, Tile> Cache {get; private set;}
+    public Vector2Int CurrentCenter { get; protected set; }
+    public Dictionary<Vector2Int, T> LoadedTileDict {get; protected set;}
+    public Dictionary<Vector2Int, T> Cache {get; protected set;}
     
-    PerlinNoise perlinNoise;
-    Thresholds thresholds;
-    private int halfLoadedHeight;
-    private int halfLoadedWidth;
+    protected int halfLoadedHeight;
+    protected int halfLoadedWidth;
 
-    public Tiles(int halfLoadedWidth, int halfLoadedHeight, PerlinNoise perlinNoise, Thresholds thresholds)
+    public Tiles(int halfLoadedWidth, int halfLoadedHeight)
     {
         this.halfLoadedWidth = halfLoadedWidth;
         this.halfLoadedHeight = halfLoadedHeight;
-        this.perlinNoise = perlinNoise;
-        this.thresholds = thresholds;
         this.LoadedTileDict = new();
         this.Cache = new();
         CurrentCenter = new(0,0);
-        ClearCacheReRender();
     }
-
+    
     public void MoveCenter(Vector2Int newPos)
     {
         Move(newPos-CurrentCenter);
     }
 
-    private void ClearCacheReRender()
+    protected virtual void ClearCacheReRender()
     {
         Cache.Clear();
-        ReRender();
+        LoadedTileDict.Clear();
+
+        for (int x = -halfLoadedWidth; x <= halfLoadedWidth; x++)
+        for (int y = -halfLoadedHeight; y <= halfLoadedHeight; y++)
+        {
+            Vector2Int worldPos = new Vector2Int(
+                CurrentCenter.x + x,
+                CurrentCenter.y + y
+            );
+
+            var render = GetRenderable(worldPos);
+            Cache.TryAdd(worldPos, render); 
+            LoadFromCache(worldPos);
+        }
     }
 
-    private void ReRender()
+    protected virtual bool TryAddToLoaded(Vector2Int pos, T element)
+    {
+        return LoadedTileDict.TryAdd(pos, element);
+    }
+
+    protected abstract T GetRenderable(int x, int y);
+    protected virtual T GetRenderable(Vector2Int pos)
+    {
+        return GetRenderable(pos.x, pos.y);
+    }
+
+    protected virtual void ReRenderWithCache()
     {
         LoadedTileDict.Clear();
 
@@ -49,13 +70,16 @@ public class Tiles
                 CurrentCenter.y + y
             );
 
-            LoadedTileDict.TryAdd(worldPos, thresholds.GetTile(perlinNoise.GetValue(x, y)));
+            if (!LoadFromCache(worldPos))
+            {
+                TryAddToLoaded(worldPos, GetRenderable(worldPos));
+            }
         }
     }
 
-    bool UnloadToCache(Vector2Int pos)
+    protected bool UnloadToCache(Vector2Int pos)
     {
-        bool exists = LoadedTileDict.Remove(pos, out Tile tile);
+        bool exists = LoadedTileDict.Remove(pos, out T tile);
 
         if (exists)
         {
@@ -65,13 +89,27 @@ public class Tiles
         return exists;
     }
 
-    bool LoadFromCache(Vector2Int pos)
+    protected bool LoadFromCache(Vector2Int pos)
+    {
+        bool exists = Cache.ContainsKey(pos);
+        if (exists)
+        {
+            TryAddToLoaded(pos, Cache[pos]);
+        } 
+
+        return exists;
+    }
+
+    protected bool OverwriteFromCache(Vector2Int pos)
     {
         bool exists = Cache.ContainsKey(pos);
         if (exists)
         {
             LoadedTileDict[pos] = Cache[pos];
-        } 
+        } else
+        {
+            LoadedTileDict.Remove(pos);
+        }
 
         return exists;
     }
@@ -81,7 +119,7 @@ public class Tiles
     /// </summary>
     /// <param name="xAxis">-1, 0 o 1</param>
     /// <param name="yAxis">-1, 0 o 1</param>
-    private void MoveOnce(int xAxis, int yAxis)
+    protected void MoveOnce(int xAxis, int yAxis)
     {
         if (xAxis == 0 && yAxis == 0) return;
         
@@ -90,7 +128,7 @@ public class Tiles
     }
 
     // amount can be -1, 0 or 1
-    private void MoveOnceX(int xAxis)
+    protected void MoveOnceX(int xAxis)
     {
         if (xAxis == 0) return;
 
@@ -124,8 +162,7 @@ public class Tiles
             bool wasCached = LoadFromCache(positionAddX);
             if (!wasCached)
             {
-                LoadedTileDict[positionAddX] = 
-                    thresholds.GetTile(perlinNoise.GetValue(positionAddX.x, positionAddX.y));
+                TryAddToLoaded(positionAddX, GetRenderable(positionAddX.x, positionAddX.y));
             }
             UnloadToCache(positionRemX);
         }
@@ -134,7 +171,7 @@ public class Tiles
         CurrentCenter = currentZero;
     }
 
-    private void MoveOnceY(int yAxis)
+    protected void MoveOnceY(int yAxis)
     {
         if (yAxis == 0) return;
 
@@ -168,14 +205,39 @@ public class Tiles
             bool wasCached = LoadFromCache(positionAddY);
             if (!wasCached)
             {
-                LoadedTileDict[positionAddY] = 
-                    thresholds.GetTile(perlinNoise.GetValue(positionAddY.x, positionAddY.y));
+                TryAddToLoaded(positionAddY, GetRenderable(positionAddY.x, positionAddY.y));
             }
             UnloadToCache(positionRemY);
         }
 
         currentZero.y += yAxis;
         CurrentCenter = currentZero;
+    }
+
+    public T GetCachedOrCreateDontCache(Vector2Int vector)
+    {
+        bool isCached = Cache.ContainsKey(vector);
+        if (isCached)
+        {
+            return Cache[vector];
+        } else
+        {
+            return GetRenderable(vector.x, vector.y);
+        }
+    }
+
+    public T GetCachedOrCreateAndCache(Vector2Int vector)
+    {
+        bool isCached = Cache.ContainsKey(vector);
+        if (isCached)
+        {
+            return Cache[vector];
+        } else
+        {
+            T toCache = GetRenderable(vector.x, vector.y);
+            Cache.TryAdd(vector, toCache);
+            return toCache;
+        }
     }
 
     public void Move(Vector2Int towards)
@@ -209,20 +271,14 @@ public class Tiles
         }
     }
 
-    public Dictionary<Vector3Int, TileBase> IntoTilemapDict()
-    {
-        return LoadedTileDict.ToDictionary(
-            kv => new Vector3Int(kv.Key.x, kv.Key.y, 0),
-            kv => kv.Value.TileBase
-        );
-    }
+    public abstract Dictionary<Vector3Int, TileBase> IntoTilemapDict();
 
     public void ChangeLoadedArea(int newHalfLoadedWidth, int newHalfLoadedHeight)
     {
         this.halfLoadedWidth = newHalfLoadedWidth;
         this.halfLoadedHeight = newHalfLoadedHeight;
 
-        ReRender();
+        ReRenderWithCache();
     }
 
     public void ForceTotalReRenderAndClearCacheForTheLoveOfGodDoNotCallMeNormallyImGoingToBreakSomethingIfYouDo()

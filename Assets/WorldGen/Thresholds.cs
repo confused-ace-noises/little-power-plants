@@ -1,3 +1,5 @@
+using UnityEngine.UIElements;
+
 public class Thresholds
 {
     public float mountain; // 1 to this
@@ -5,6 +7,14 @@ public class Thresholds
     public float sand; // grass to this
     // water is lower than sand
     public TileProvider tileProvider;
+
+    public Thresholds(float sand, float grass, float mountain, TileProvider tileProvider)
+    {
+        this.mountain = mountain;
+        this.grass = grass;
+        this.sand = sand;
+        this.tileProvider = tileProvider;
+    }
 
     public Tile GetTile(float value)
     {

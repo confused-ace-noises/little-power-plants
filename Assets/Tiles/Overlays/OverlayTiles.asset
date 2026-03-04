@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae2b104fa0495ea4e8100f9af7ddca56, type: 3}
+  m_Name: OverlayTiles
+  m_EditorClassIdentifier: Assembly-CSharp::TileProvider
+  tiles:
+  - {fileID: 11400000, guid: 9b37e2f4e0854a944950fcfde5f35eb0, type: 2}
+  - {fileID: 11400000, guid: 63d446ce72b5e144fbb40c55c08a19a1, type: 2}
+  - {fileID: 11400000, guid: 555babaec8c0d2b489e77f22946e1df4, type: 2}
+  - {fileID: 11400000, guid: 246ad2af34676c547b6a1e70777e5755, type: 2}
+  - {fileID: 11400000, guid: bd860e9af58bc934fa03f17bbef79b96, type: 2}
