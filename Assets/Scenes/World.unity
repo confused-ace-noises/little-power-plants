@@ -133,6 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnNewTypeButtons
   buttonsPrefabs:
     solar: {fileID: 484200250527976342, guid: 3640e400cb0046e41ad0f0f1a10d592f, type: 3}
+    powerTower: {fileID: 484200250527976342, guid: 57fd93f23aced284a9687d8a2e89cefe, type: 3}
 --- !u!1 &257098283
 GameObject:
   m_ObjectHideFlags: 0
@@ -618,6 +619,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 468238aee50c34544a4e18362b0d4394, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingPlacementSystem
+  spawnNewTypeButtons: {fileID: 253899748}
   grid: {fileID: 768815962}
   world: {fileID: 1124691564}
   tileIsBeingSelected: {fileID: 576400166}
@@ -1929,10 +1931,10 @@ RectTransform:
   - {fileID: 1604886629}
   m_Father: {fileID: 1803918087}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -5, y: 185.67}
-  m_SizeDelta: {x: 258.4506, y: 66.1376}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -272.14, y: -32.729996}
+  m_SizeDelta: {x: -541.54944, y: 66.1376}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1535262999
 MonoBehaviour:
@@ -2487,10 +2489,10 @@ RectTransform:
   - {fileID: 7309792555261178347}
   m_Father: {fileID: 1803918087}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 270.7747, y: 185.67}
-  m_SizeDelta: {x: 258.4506, y: 66.1376}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: -32.729996}
+  m_SizeDelta: {x: -541.54944, y: 66.1376}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3690670368283046328
 MonoBehaviour:
@@ -2702,8 +2704,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 265782843351891679}
   m_HandleRect: {fileID: 4643393249924719650}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2961,7 +2963,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 3184650830024730761}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
