@@ -1,12 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Numerics;
-using NUnit.Framework;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
 public class TileIsBeingSelected : MonoBehaviour
@@ -20,7 +13,7 @@ public class TileIsBeingSelected : MonoBehaviour
     public World world;
     public TileProvider illuminatedTiles;
 
-    bool DontPlaceOverride;
+    public bool DontPlaceOverride { get; private set; }
     bool RemoveLastBeforeOverride;
 
     public void Start()
@@ -131,5 +124,10 @@ public class TileIsBeingSelected : MonoBehaviour
     public void SetOverrideFalse()
     {
         DontPlaceOverride = false;
+    }
+
+    public void SetOverride(bool setTo)
+    {
+        if (setTo) {SetOverrideTrue();} else {SetOverrideFalse();}  
     }
 }

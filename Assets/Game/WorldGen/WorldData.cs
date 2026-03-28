@@ -16,6 +16,9 @@ public class WorldData : ScriptableObject
     public float grass = 0.5f;
     public float sand = 0.35f;
 
+    [Header("WorldGen")]
+    public int seed;
+
     public int ChunkWidth {
         get => (halfLogicChunkWidth * 2) + 1;
         set => ChunkWidth = (value - 1) / 2;

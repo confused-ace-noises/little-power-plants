@@ -66,7 +66,7 @@ public class MouseTrackSystem : MonoBehaviour
 
     private bool latestState;
     private Vector2Int? latestCell;
-    
+
     private void IntelligentClickResolution(bool input)
     {
         Vector2 mousePosCurrent = MousePos();
@@ -75,25 +75,29 @@ public class MouseTrackSystem : MonoBehaviour
         {
             if (EventSystem.current.IsPointerOverGameObject()) return;
             latestState = true;
-            latestCell = (Vector2Int) GetCell(mousePosCurrent);
-        } else if (latestState == false && mouseState == false)
+            latestCell = (Vector2Int)GetCell(mousePosCurrent);
+        }
+        else if (latestState == false && mouseState == false)
         {
             // mouse was clicked from within the menu earlier, do nothing
             latestCell = null;
             return;
-        } else if (latestState == true && mouseState == false)
+        }
+        else if (latestState == true && mouseState == false)
         {
             // Debug.Log("IntelligntClickRes 3rd br");
-            Vector2Int currentCell = (Vector2Int) GetCell(mousePosCurrent);
+            Vector2Int currentCell = (Vector2Int)GetCell(mousePosCurrent);
 
             if (latestCell == null)
             {
                 Debug.LogWarning("Something went wrong in IntelligentClickResolution, will try to recover by invoking a non-drag click event regardless of latestCell.");
                 MouseClickInCell?.Invoke(currentCell);
-            } else if (currentCell == latestCell)
+            }
+            else if (currentCell == latestCell)
             {
                 MouseClickInCell?.Invoke(currentCell);
-            } else
+            }
+            else
             {
                 MouseDragClickBetweenCells?.Invoke(latestCell ?? throw new Exception("this should never happen actually"), currentCell);
             }
@@ -101,7 +105,8 @@ public class MouseTrackSystem : MonoBehaviour
             latestState = false;
             latestCell = null;
 
-        } else if (latestState == true && mouseState == true)
+        }
+        else if (latestState == true && mouseState == true)
         {
             // this would mean it called this twice... do nothing i guess?
             return;
@@ -111,7 +116,7 @@ public class MouseTrackSystem : MonoBehaviour
     private void SimpleClickResolution(bool input)
     {
         if (EventSystem.current.IsPointerOverGameObject()) return;
-        
+
         bool mouseState = input;
 
         Vector2 mousePos = MousePos();
@@ -142,15 +147,88 @@ public class MouseTrackSystem : MonoBehaviour
 
     public static event Action<Vector2, bool> NewMouseStateInPos;
     public static event Action<Vector3Int, bool> NewMouseStateInCell;
-    
+
     // only triggers on 0 (0(mouse is untouched) -> 1(mouse got pressed) -> 0(stopped pressing) => Invoke!)
     // and only if the mouse stays in the same cell as when 1 was triggered
     public static event Action<Vector2Int> MouseClickInCell;
-    
+
     // like MouseCLickInCell, but triggers if the cell in which 1 was tripped is different than
     // the one in which 0 was tripped afterwards
     public static event Action<Vector2Int, Vector2Int> MouseDragClickBetweenCells;
     public static event Action<Vector2Int, Vector2Int> MouseDragHasntClickedYet;
+
+    /*
+    private void OnEnable()
+    {
+        MouseMoved += OnMouseMoved;
+
+        MouseMovedIntoCell += OnMouseMovedIntoCell;
+        MouseMovedOutOfCell += OnMouseMovedOutOfCell;
+
+        NewMouseStateInPos += OnNewMouseStateInPos;
+        NewMouseStateInCell += OnNewMouseStateInCell;
+
+        MouseClickInCell += OnMouseClickInCell;
+        MouseDragClickBetweenCells += OnMouseDragClickBetweenCells;
+        MouseDragHasntClickedYet += OnMouseDragHasntClickedYet;
+    }
+
+    private void OnDisable()
+    {
+        MouseMoved -= OnMouseMoved;
+
+        MouseMovedIntoCell -= OnMouseMovedIntoCell;
+        MouseMovedOutOfCell -= OnMouseMovedOutOfCell;
+
+        NewMouseStateInPos -= OnNewMouseStateInPos;
+        NewMouseStateInCell -= OnNewMouseStateInCell;
+
+        MouseClickInCell -= OnMouseClickInCell;
+        MouseDragClickBetweenCells -= OnMouseDragClickBetweenCells;
+        MouseDragHasntClickedYet -= OnMouseDragHasntClickedYet;
+    }
+
+    private void OnMouseMoved(Vector2 pos)
+    {
+        //Debug.LogWarning($"MouseMoved: {pos}");
+    }
+
+    private void OnMouseMovedIntoCell(Vector3Int cell)
+    {
+        Debug.LogWarning($"MouseMovedIntoCell: {cell}");
+    }
+
+    private void OnMouseMovedOutOfCell(Vector3Int cell)
+    {
+        Debug.LogWarning($"MouseMovedOutOfCell: {cell}");
+    }
+
+    private void OnNewMouseStateInPos(Vector2 pos, bool isPressed)
+    {
+        Debug.LogWarning($"NewMouseStateInPos: {pos}, pressed={isPressed}");
+    }
+
+    private void OnNewMouseStateInCell(Vector3Int cell, bool isPressed)
+    {
+        Debug.LogWarning($"NewMouseStateInCell: {cell}, pressed={isPressed}");
+    }
+
+    private void OnMouseClickInCell(Vector2Int cell)
+    {
+        Debug.LogWarning($"MouseClickInCell: {cell}");
+    }
+
+    private void OnMouseDragClickBetweenCells(Vector2Int start, Vector2Int end)
+    {
+        Debug.LogWarning($"MouseDragClickBetweenCells: {start} -> {end}");
+    }
+
+
+    private void OnMouseDragHasntClickedYet(Vector2Int start, Vector2Int end)
+    {
+        Debug.LogWarning($"MouseDragHasntClickedYet: {start} -> {end}");
+    }
+    */
 
     public Vector2 MousePos() => Mouse.current.position.ReadValue();
 

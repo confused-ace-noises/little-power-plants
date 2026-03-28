@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Tilemaps;
 
 public class World : MonoBehaviour
@@ -26,7 +24,6 @@ public class World : MonoBehaviour
     public Building[] buildings;
 
     [Header("Miscellaneous")]
-    public int seed = 1234567;
     public MouseTrackSystem mouseTrackSystem;
 
     public WorldNoise perlinNoise;
@@ -44,11 +41,12 @@ public class World : MonoBehaviour
 
     [NonSerialized] bool worldIsDirty;
 
-    UnityEvent<Vector2Int[]> buildingIsPlaced;
+    // UnityEvent<Vector2Int[]> buildingIsPlaced;
 
     void Awake()
     {
-        perlinNoise = new WorldNoise(seed, 0.07f);
+        UnityEngine.Random.InitState(data.seed);
+        perlinNoise = new WorldNoise(data.seed, 0.07f);
         thresholds = new Thresholds(data.sand, data.grass, data.mountain, terrainTileProvider);
         playerPos.position = Vector3.zero;
         overlayTiles = new Overlay(data.halfLoadedWidth, data.halfLoadedWidth, overlayTileProvider);
@@ -156,7 +154,7 @@ public class World : MonoBehaviour
     private void ChangeSeed()
     {
         // perlinNoise = new WorldNoise(seed, 0.1f);
-        perlinNoise = new WorldNoise(seed, 0.07f);
+        perlinNoise = new WorldNoise(data.seed, 0.07f);
         thresholds = new Thresholds(data.sand, data.grass, data.mountain, terrainTileProvider);
         worldTiles = new WorldTiling(data.halfLoadedWidth, data.halfLoadedWidth, data.halfLogicChunkWidth, data.halfLogicChunkWidth, perlinNoise, thresholds, terrainTileProvider, overlayTiles);
         worldTiles.ForceTotalReRenderAndClearCacheForTheLoveOfGodDoNotCallMeNormallyImGoingToBreakSomethingIfYouDo();

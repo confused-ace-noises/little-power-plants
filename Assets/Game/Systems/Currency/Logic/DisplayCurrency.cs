@@ -8,7 +8,7 @@ public class DisplayCurrency : MonoBehaviour
 
     void Awake()
     {
-        currency.ValueChanged += OnValueUpdate;
+        currency.ValueChangedTo += OnValueUpdate;
     }
 
     public void OnValueUpdate(float newVal)

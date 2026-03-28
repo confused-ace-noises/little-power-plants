@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fc439f6e3b150e4ba7c529f833d140d, type: 3}
   m_Name: Energy Tower Behavior
   m_EditorClassIdentifier: Assembly-CSharp::EnergyTowerBehavior
+  placementOffset: {x: 0.5, y: 0.5, z: -3}
   LinePrefab: {fileID: 19749457431744336, guid: 712c84f9a5398f64a9aef7fbcbe78897, type: 3}

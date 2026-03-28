@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -17,8 +18,7 @@ public class Tile
     }
 
     private bool isOccupied;
-    private (Building, GameObject)? occupiedBy;
-
+    private BuildingOnTileInfo? occupiedBy;
 
     public TileBase TileBase { get; private set; }
     public TileType type;
@@ -42,10 +42,10 @@ public class Tile
         };
     }
 
-    public void SetOccupiedTrue(Building building, GameObject occupier)
+    public void SetOccupiedTrue(BuildingOnTileInfo info)
     {
         isOccupied = true;
-        occupiedBy = (building, occupier);
+        occupiedBy = info;
     }
 
     public void SetOccupiedFalse()
@@ -57,7 +57,31 @@ public class Tile
 
     public bool IsOccupied() => this.isOccupied;
 
-    public (Building, GameObject)? Occupier() => this.occupiedBy;
+    public BuildingOnTileInfo? Occupier() => this.occupiedBy;
+}
+
+public struct BuildingOnTileInfo
+{
+    public BuildingOnTileInfo(Building building, GameObject gameObject, HashSet<Vector2Int> family)
+    {
+        this.building = building;
+        this.gameObject = gameObject;
+        this.family = family;
+    }
+
+    public Building building;
+    public GameObject gameObject;
+    public HashSet<Vector2Int> family;
+
+    public (Building, GameObject) Tuple
+    {
+        get => (building, gameObject);
+        set
+        {
+            this.building = value.Item1;
+            this.gameObject = value.Item2;
+        }
+    }
 }
 
 public class OverlayTile

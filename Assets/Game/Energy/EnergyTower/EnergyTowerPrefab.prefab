@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6614584120663608024}
   - component: {fileID: 6879108529199587666}
+  - component: {fileID: 2268166600800188448}
   m_Layer: 0
   m_Name: EnergyTowerPrefab
   m_TagString: Untagged
@@ -91,3 +92,15 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &2268166600800188448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8606134625878812975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1d89b4ef1e1d0d4193536d30d1164e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Hitman
